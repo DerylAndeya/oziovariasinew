@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:oziovariasi/screens/sign_in_screen.dart';
 import 'package:oziovariasi/screens/add_post_screen.dart';
 import 'package:oziovariasi/screens/detail_screen.dart';
@@ -35,11 +36,14 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final ThemeData theme = Theme.of(context);
+    final TextTheme textTheme = theme.textTheme;
+
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: theme.scaffoldBackgroundColor,
       appBar: AppBar(
-        backgroundColor: Colors.black,
-        title: const Text('HOME', style: TextStyle(color: Colors.white)),
+        backgroundColor: theme.appBarTheme.backgroundColor,
+        title: Text('Home', style: textTheme.titleLarge),
         actions: [
           if (_searchController.text.isNotEmpty)
             IconButton(
@@ -47,87 +51,84 @@ class _HomeScreenState extends State<HomeScreen> {
                 _searchController.clear();
                 setState(() {});
               },
-              icon: Icon(Icons.clear, color: Colors.white),
+              icon: Icon(Icons.clear),
             ),
           IconButton(
             onPressed: () {
               showDialog(
                 context: context,
                 builder: (context) => AlertDialog(
-                  backgroundColor: Colors.black,
-                  title: const Text('Cari Postingan', style: TextStyle(color: Colors.white)),
+                  backgroundColor: theme.dialogBackgroundColor,
+                  title: Text('Cari Postingan', style: TextStyle(color: theme.textTheme.titleLarge!.color)),
                   content: TextField(
                     controller: _searchController,
                     onChanged: (value) {
                       setState(() {});
                     },
-                    decoration: const InputDecoration(
+                    decoration: InputDecoration(
                       hintText: 'Masukkan kata kunci',
-                      hintStyle: TextStyle(color: Colors.grey),
+                      hintStyle: TextStyle(color: theme.hintColor),
                     ),
-                    style: const TextStyle(color: Colors.white),
+                    style: TextStyle(color: theme.textTheme.bodyLarge!.color),
                   ),
                   actions: [
                     TextButton(
                       onPressed: () {
                         Navigator.of(context).pop();
                       },
-                      child: const Text('Batal', style: TextStyle(color: Colors.white)),
+                      child: Text('Batal', style: TextStyle(color: theme.textTheme.bodyLarge!.color)),
                     ),
                     TextButton(
                       onPressed: () {
                         setState(() {});
                         Navigator.of(context).pop();
                       },
-                      child: const Text('Cari', style: TextStyle(color: Colors.white)),
+                      child: Text('Cari', style: TextStyle(color: theme.textTheme.bodyLarge!.color)),
                     ),
                   ],
                 ),
               );
             },
-            icon: const Icon(Icons.search, color: Colors.white),
+            icon: Icon(Icons.search),
           ),
         ],
       ),
       drawer: Drawer(
         child: Container(
-          color: Colors.black,
+          color: theme.canvasColor,
           child: ListView(
             padding: EdgeInsets.zero,
             children: [
-              const DrawerHeader(
+              DrawerHeader(
                 decoration: BoxDecoration(
-                  color: Colors.black,
+                  color: theme.primaryColor,
                 ),
                 child: Text(
                   'Menu',
-                  style: TextStyle(
-                    fontSize: 24,
-                    color: Colors.white,
-                  ),
+                  style: textTheme.titleLarge!.copyWith(color: theme.textTheme.titleLarge!.color),
                 ),
               ),
               ListTile(
-                leading: const Icon(Icons.home, color: Colors.white),
-                title: const Text('Beranda', style: TextStyle(color: Colors.white)),
+                leading: Icon(Icons.home, color: theme.textTheme.bodyLarge!.color),
+                title: Text('Beranda', style: textTheme.bodyLarge!.copyWith(color: theme.textTheme.bodyLarge!.color)),
                 onTap: () {
                   Navigator.pop(context);
                 },
               ),
               ListTile(
-                leading: const Icon(Icons.favorite, color: Colors.white),
-                title: const Text('Favorit', style: TextStyle(color: Colors.white)),
+                leading: Icon(Icons.favorite, color: theme.textTheme.bodyLarge!.color),
+                title: Text('Favorit', style: textTheme.bodyLarge!.copyWith(color: theme.textTheme.bodyLarge!.color)),
                 onTap: () {
                   Navigator.pop(context);
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) =>  FavoriteScreen()),
+                    MaterialPageRoute(builder: (context) => FavoriteScreen()),
                   );
                 },
               ),
               ListTile(
-                leading: const Icon(Icons.account_circle, color: Colors.white),
-                title: const Text('Profil', style: TextStyle(color: Colors.white)),
+                leading: Icon(Icons.account_circle, color: theme.textTheme.bodyLarge!.color),
+                title: Text('Profil', style: textTheme.bodyLarge!.copyWith(color: theme.textTheme.bodyLarge!.color)),
                 onTap: () {
                   Navigator.pop(context);
                   Navigator.push(
@@ -137,8 +138,8 @@ class _HomeScreenState extends State<HomeScreen> {
                 },
               ),
               ListTile(
-                leading: const Icon(Icons.brightness_6, color: Colors.white),
-                title: const Text('Mode Terang', style: TextStyle(color: Colors.white)),
+                leading: Icon(Icons.brightness_6, color: theme.textTheme.bodyLarge!.color),
+                title: Text('Mode Terang', style: textTheme.bodyLarge!.copyWith(color: theme.textTheme.bodyLarge!.color)),
                 onTap: () {
                   if (widget.onThemeChanged != null) {
                     widget.onThemeChanged!(ThemeMode.light);
@@ -147,8 +148,8 @@ class _HomeScreenState extends State<HomeScreen> {
                 },
               ),
               ListTile(
-                leading: const Icon(Icons.brightness_2, color: Colors.white),
-                title: const Text('Mode Gelap', style: TextStyle(color: Colors.white)),
+                leading: Icon(Icons.brightness_2, color: theme.textTheme.bodyLarge!.color),
+                title: Text('Mode Gelap', style: textTheme.bodyLarge!.copyWith(color: theme.textTheme.bodyLarge!.color)),
                 onTap: () {
                   if (widget.onThemeChanged != null) {
                     widget.onThemeChanged!(ThemeMode.dark);
@@ -157,8 +158,8 @@ class _HomeScreenState extends State<HomeScreen> {
                 },
               ),
               ListTile(
-                leading: const Icon(Icons.brightness_auto, color: Colors.white),
-                title: const Text('Mode Sistem', style: TextStyle(color: Colors.white)),
+                leading: Icon(Icons.brightness_auto, color: theme.textTheme.bodyLarge!.color),
+                title: Text('Mode Sistem', style: textTheme.bodyLarge!.copyWith(color: theme.textTheme.bodyLarge!.color)),
                 onTap: () {
                   if (widget.onThemeChanged != null) {
                     widget.onThemeChanged!(ThemeMode.system);
@@ -167,27 +168,27 @@ class _HomeScreenState extends State<HomeScreen> {
                 },
               ),
               ListTile(
-                leading: const Icon(Icons.logout, color: Colors.white),
-                title: const Text('Logout', style: TextStyle(color: Colors.white)),
+                leading: Icon(Icons.logout, color: theme.textTheme.bodyLarge!.color),
+                title: Text('Logout', style: textTheme.bodyLarge!.copyWith(color: theme.textTheme.bodyLarge!.color)),
                 onTap: () {
                   showDialog(
                     context: context,
                     builder: (context) => AlertDialog(
-                      backgroundColor: Colors.black,
-                      title: const Text('Konfirmasi Logout', style: TextStyle(color: Colors.white)),
-                      content: const Text('Apakah Anda yakin ingin logout?', style: TextStyle(color: Colors.white)),
+                      backgroundColor: theme.dialogBackgroundColor,
+                      title: Text('Konfirmasi Logout', style: TextStyle(color: theme.textTheme.bodyLarge!.color)),
+                      content: Text('Apakah Anda yakin ingin logout?', style: TextStyle(color: theme.textTheme.bodyLarge!.color)),
                       actions: [
                         TextButton(
                           onPressed: () {
                             Navigator.of(context).pop();
                           },
-                          child: const Text('Batal', style: TextStyle(color: Colors.white)),
+                          child: Text('Batal', style: TextStyle(color: theme.textTheme.bodyLarge!.color)),
                         ),
                         TextButton(
                           onPressed: () {
                             signOut(context);
                           },
-                          child: const Text('Logout', style: TextStyle(color: Colors.white)),
+                          child: Text('Logout', style: TextStyle(color: theme.textTheme.bodyLarge!.color)),
                         ),
                       ],
                     ),
@@ -202,11 +203,11 @@ class _HomeScreenState extends State<HomeScreen> {
         stream: FirebaseFirestore.instance.collection('posts').orderBy('timestamp', descending: true).snapshots(),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
+            return Center(child: CircularProgressIndicator());
           }
 
           if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-            return const Center(child: Text('Tidak ada postingan tersedia', style: TextStyle(color: Colors.black)));
+            return Center(child: Text('Tidak ada postingan tersedia', style: textTheme.bodyLarge!.copyWith(color: theme.textTheme.bodyLarge!.color)));
           }
 
           var posts = snapshot.data!.docs;
@@ -219,7 +220,7 @@ class _HomeScreenState extends State<HomeScreen> {
           }).toList();
 
           return GridView.builder(
-            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
               crossAxisCount: 3,
               childAspectRatio: 1,
             ),
@@ -251,58 +252,41 @@ class _HomeScreenState extends State<HomeScreen> {
                   );
                 },
                 child: Card(
-                  color: Colors.white,
+                  color: theme.cardColor,
                   margin: const EdgeInsets.all(4.0),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       if (imageUrl.isNotEmpty)
                         Expanded(
-                          child: Image.network(
-                            imageUrl,
+                          child: CachedNetworkImage(
+                            imageUrl: imageUrl,
                             fit: BoxFit.cover,
                             width: double.infinity,
                             height: double.infinity,
-                            errorBuilder: (context, error, stackTrace) {
-                              return const Center(child: Text('Gagal memuat gambar', style: TextStyle(color: Colors.black)));
-                            },
+                            placeholder: (context, url) => Center(child: CircularProgressIndicator()),
+                            errorWidget: (context, url, error) => Center(child: Text('Gagal memuat gambar', style: textTheme.bodyLarge!.copyWith(color: theme.textTheme.bodyLarge!.color))),
                           ),
                         )
                       else
-                        const Expanded(
-                          child: Center(child: Text('Gambar tidak tersedia', style: TextStyle(color: Colors.black))),
+                        Expanded(
+                          child: Center(child: Text('Gambar tidak tersedia', style: textTheme.bodyLarge!.copyWith(color: theme.textTheme.bodyLarge!.color))),
                         ),
                       Padding(
                         padding: const EdgeInsets.all(4.0),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(
-                              username,
-                              style: const TextStyle(
-                                fontWeight: FontWeight.bold,
-                                fontSize: 14,
-                                color: Colors.black,
-                              ),
-                            ),
-                            const SizedBox(height: 2),
-                            Text(
-                              formattedDate,
-                              style: const TextStyle(
-                                fontSize: 10,
-                                color: Colors.black,
-                              ),
-                            ),
-                            const SizedBox(height: 4),
+                            Text(username, style: textTheme.bodyLarge!.copyWith(color: theme.textTheme.bodyLarge!.color, fontWeight: FontWeight.bold)),
+                            const SizedBox(height: 4.0),
                             Text(
                               text,
                               maxLines: 2,
                               overflow: TextOverflow.ellipsis,
-                              style: const TextStyle(
-                                fontSize: 12,
-                                color: Colors.black,
-                              ),
+                              style: textTheme.bodyMedium!.copyWith(color: theme.textTheme.bodyLarge!.color),
                             ),
+                            const SizedBox(height: 4.0),
+                            Text(formattedDate, style: textTheme.bodySmall!.copyWith(color: theme.textTheme.bodySmall!.color)),
                           ],
                         ),
                       ),
@@ -315,14 +299,14 @@ class _HomeScreenState extends State<HomeScreen> {
         },
       ),
       floatingActionButton: FloatingActionButton(
-        backgroundColor: Colors.black,
         onPressed: () {
           Navigator.push(
             context,
             MaterialPageRoute(builder: (context) => AddPostScreen()),
           );
         },
-        child: const Icon(Icons.add, color: Colors.white),
+        child: Icon(Icons.add),
+        backgroundColor: theme.floatingActionButtonTheme.backgroundColor,
       ),
     );
   }

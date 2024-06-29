@@ -39,9 +39,9 @@ class _AkunScreenState extends State<AkunScreen> {
       DocumentSnapshot userDoc = await _firestore.collection('users').doc(_currentUser.uid).get();
 
       if (userDoc.exists) {
-        var userData = userDoc.data() as Map<String, dynamic>;
+        var userData = userDoc.data() as Map<String, dynamic>?;
 
-        if (userData != null && userData.containsKey('photoUrl')) {
+        if (userData != null) {
           _userProfile = userDoc;
           _profileImageUrl = userData['photoUrl'];
           print('Profile image URL: $_profileImageUrl'); // Logging untuk debugging
@@ -75,7 +75,7 @@ class _AkunScreenState extends State<AkunScreen> {
 
         await _firestore.collection('users').doc(_currentUser.uid).update({'photoUrl': downloadUrl});
 
-        // Update the profile image URL in the state
+        // Reload user data after updating profile picture
         setState(() {
           _profileImageUrl = downloadUrl;
         });
@@ -88,10 +88,8 @@ class _AkunScreenState extends State<AkunScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
       appBar: AppBar(
-        backgroundColor: Colors.black,
-        title: Text('Profil', style: TextStyle(color: Colors.white)),
+        title: Text('Profil'),
       ),
       body: isLoading
           ? Center(child: CircularProgressIndicator())
@@ -123,7 +121,7 @@ class _AkunScreenState extends State<AkunScreen> {
             SizedBox(height: 16.0),
             Text(
               _currentUser.displayName ?? '',
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.black),
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
             ),
             SizedBox(height: 8.0),
             Text(
@@ -133,7 +131,7 @@ class _AkunScreenState extends State<AkunScreen> {
             SizedBox(height: 16.0),
             Text(
               'Postingan Saya',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.black),
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             SizedBox(height: 8.0),
             _buildUserPosts(),
@@ -146,7 +144,7 @@ class _AkunScreenState extends State<AkunScreen> {
   Widget _buildUserPosts() {
     if (_userPosts == null || _userPosts!.docs.isEmpty) {
       return Center(
-        child: Text('Belum ada postingan', style: TextStyle(color: Colors.black)),
+        child: Text('Belum ada postingan'),
       );
     } else {
       return GridView.builder(
@@ -182,9 +180,6 @@ class _AkunScreenState extends State<AkunScreen> {
               child: Image.network(
                 data['image_url'] ?? '',
                 fit: BoxFit.cover,
-                errorBuilder: (context, error, stackTrace) {
-                  return Center(child: Text('Gagal memuat gambar', style: TextStyle(color: Colors.black)));
-                },
               ),
             ),
           );

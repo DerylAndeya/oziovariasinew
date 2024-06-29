@@ -4,7 +4,9 @@ import 'package:oziovariasi/screens/home_screen.dart';
 import 'package:oziovariasi/screens/sign_up_screen.dart';
 
 class SignInScreen extends StatefulWidget {
-  const SignInScreen({super.key});
+  final Function(ThemeMode)? onThemeChanged;
+
+  const SignInScreen({super.key, this.onThemeChanged});
 
   @override
   _SignInScreenState createState() => _SignInScreenState();
@@ -14,15 +16,31 @@ class _SignInScreenState extends State<SignInScreen> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   String _errorMessage = '';
+  List<bool> _selection = [false, true];
+
+  @override
+  void initState() {
+    super.initState();
+  }
+
+  @override
+  void dispose() {
+    _emailController.dispose();
+    _passwordController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
+    final textTheme = Theme.of(context).textTheme;
+
     return Scaffold(
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
-        title: const Text('OZIOVARIASI',
-            style: TextStyle(color: Colors.white)),
-        centerTitle: true, // This centers the title
-        backgroundColor: Colors.black,
+        title: Text('OZIOVARIASI',
+            style: TextStyle(color: textTheme.headlineSmall?.color)),
+        centerTitle: true,
+        backgroundColor: Theme.of(context).appBarTheme.backgroundColor,
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -30,8 +48,13 @@ class _SignInScreenState extends State<SignInScreen> {
           children: [
             const SizedBox(height: 32.0),
             ToggleButtons(
-              isSelected: [false, true],
+              isSelected: _selection,
               onPressed: (index) {
+                setState(() {
+                  for (int i = 0; i < _selection.length; i++) {
+                    _selection[i] = i == index;
+                  }
+                });
                 if (index == 0) {
                   Navigator.push(
                     context,
@@ -39,7 +62,7 @@ class _SignInScreenState extends State<SignInScreen> {
                   );
                 }
               },
-              color: Colors.black,
+              color: textTheme.labelLarge?.color,
               selectedColor: Colors.white,
               fillColor: Colors.black,
               borderColor: Colors.black,
@@ -55,49 +78,36 @@ class _SignInScreenState extends State<SignInScreen> {
                 ),
               ],
             ),
+            const SizedBox(height: 32.0),
             Align(
               alignment: Alignment.centerLeft,
               child: Text(
                 'Sign In',
-                style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.black),
+                style: TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                  color: textTheme.headlineSmall?.color,
+                ),
               ),
             ),
-            const SizedBox(height: 32.0),
+            const SizedBox(height: 20.0),
             TextField(
               controller: _emailController,
-              decoration: const InputDecoration(
-                labelText: 'Email',
-                labelStyle: TextStyle(color: Colors.black),
-                border: OutlineInputBorder(
-                  borderSide: BorderSide(color: Colors.black),
-                ),
-                enabledBorder: OutlineInputBorder(
-                  borderSide: BorderSide(color: Colors.black),
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderSide: BorderSide(color: Colors.black),
-                ),
+              decoration: InputDecoration(
+                labelText: 'Email*',
+                border: OutlineInputBorder(),
                 filled: true,
-                fillColor: Colors.white70,
+                fillColor: Theme.of(context).inputDecorationTheme.fillColor,
               ),
             ),
             const SizedBox(height: 16.0),
             TextField(
               controller: _passwordController,
-              decoration: const InputDecoration(
-                labelText: 'Password',
-                labelStyle: TextStyle(color: Colors.black),
-                border: OutlineInputBorder(
-                  borderSide: BorderSide(color: Colors.black),
-                ),
-                enabledBorder: OutlineInputBorder(
-                  borderSide: BorderSide(color: Colors.black),
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderSide: BorderSide(color: Colors.black),
-                ),
+              decoration: InputDecoration(
+                labelText: 'Password*',
+                border: OutlineInputBorder(),
                 filled: true,
-                fillColor: Colors.white70,
+                fillColor: Theme.of(context).inputDecorationTheme.fillColor,
               ),
               obscureText: true,
             ),
@@ -132,7 +142,9 @@ class _SignInScreenState extends State<SignInScreen> {
                   );
 
                   Navigator.of(context).pushReplacement(
-                    MaterialPageRoute(builder: (context) => const HomeScreen()),
+                    MaterialPageRoute(builder: (context) => HomeScreen(
+                      onThemeChanged: widget.onThemeChanged,
+                    )),
                   );
                 } on FirebaseAuthException catch (error) {
                   if (error.code == 'user-not-found') {

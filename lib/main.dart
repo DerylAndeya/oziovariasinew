@@ -5,7 +5,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:oziovariasi/firebase_options.dart';
 import 'package:oziovariasi/screens/home_screen.dart';
 import 'package:oziovariasi/screens/sign_in_screen.dart';
-import 'package:oziovariasi/screens/favorite_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -54,8 +53,11 @@ class _MyAppState extends State<MyApp> {
 
   Future<void> _saveTheme(ThemeMode themeMode) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    String theme = themeMode == ThemeMode.light ? 'light' :
-    themeMode == ThemeMode.dark ? 'dark' : 'system';
+    String theme = themeMode == ThemeMode.light
+        ? 'light'
+        : themeMode == ThemeMode.dark
+        ? 'dark'
+        : 'system';
     await prefs.setString('theme', theme);
   }
 
@@ -65,16 +67,48 @@ class _MyAppState extends State<MyApp> {
       debugShowCheckedModeBanner: false,
       title: 'OZIOVARIASI',
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.black),
-        useMaterial3: true,
-        scaffoldBackgroundColor: Colors.blueGrey[200],
+        brightness: Brightness.light,
+        primaryColor: Colors.black,
+        appBarTheme: const AppBarTheme(backgroundColor: Colors.black),
+        scaffoldBackgroundColor: Colors.white,
+        dialogBackgroundColor: Colors.white,
+        cardColor: Colors.white,
+        floatingActionButtonTheme: FloatingActionButtonThemeData(
+          backgroundColor: Colors.white,
+        ),
+        textTheme: const TextTheme(
+          titleLarge: TextStyle(color: Colors.white),
+          bodyLarge: TextStyle(color: Colors.black),
+          bodyMedium: TextStyle(color: Colors.black),
+          bodySmall: TextStyle(color: Colors.black),
+        ),
+        iconTheme: const IconThemeData(color: Colors.black),
       ),
-      darkTheme: ThemeData.dark(), // Tema gelap
-      themeMode: _themeMode, // Gunakan mode tema yang sesuai
-      home: StreamBuilder(
+      darkTheme: ThemeData(
+        brightness: Brightness.dark,
+        primaryColor: Colors.grey[900],
+        appBarTheme: AppBarTheme(backgroundColor: Colors.grey[900]),
+        scaffoldBackgroundColor: Colors.grey[850],
+        dialogBackgroundColor: Colors.grey[800],
+        cardColor: Colors.grey[700],
+        floatingActionButtonTheme: FloatingActionButtonThemeData(
+          backgroundColor: Colors.black,
+        ),
+        textTheme: const TextTheme(
+          titleLarge: TextStyle(color: Colors.white),
+            bodyLarge: TextStyle(color: Colors.white),
+          bodyMedium: TextStyle(color: Colors.white),
+          bodySmall: TextStyle(color: Colors.grey),
+        ),
+        iconTheme: const IconThemeData(color: Colors.white),
+      ),
+      themeMode: _themeMode,
+      home: StreamBuilder<User?>(
         stream: FirebaseAuth.instance.authStateChanges(),
         builder: (context, snapshot) {
-          if (snapshot.hasData) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return Center(child: CircularProgressIndicator());
+          } else if (snapshot.hasData) {
             return HomeScreen(onThemeChanged: _changeTheme);
           } else {
             return const SignInScreen();

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:oziovariasi/screens/home_screen.dart';
 import 'package:oziovariasi/screens/sign_in_screen.dart';
 
@@ -19,13 +20,24 @@ class _SignUpScreenState extends State<SignUpScreen> {
   String _errorMessage = '';
 
   @override
+  void dispose() {
+    _emailController.dispose();
+    _passwordController.dispose();
+    _nameController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final textTheme = Theme.of(context).textTheme;
+
     return Scaffold(
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
-        title: const Text('OZIOVARIASI',
-            style: TextStyle(color: Colors.white)),
-        centerTitle: true, // This centers the title
-        backgroundColor: Colors.black,
+        title: Text('OZIOVARIASI',
+            style: TextStyle(color: textTheme.headlineSmall?.color)),
+        centerTitle: true,
+        backgroundColor: Theme.of(context).appBarTheme.backgroundColor,
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -42,7 +54,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                   );
                 }
               },
-              color: Colors.black,
+              color: textTheme.labelLarge?.color,
               selectedColor: Colors.white,
               fillColor: Colors.black,
               borderColor: Colors.black,
@@ -63,27 +75,41 @@ class _SignUpScreenState extends State<SignUpScreen> {
               alignment: Alignment.centerLeft,
               child: Text(
                 'Sign Up',
-                style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.black),
+                style: TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                  color: textTheme.headlineSmall?.color,
+                ),
+              ),
+            ),
+            const SizedBox(height: 20.0),
+            TextField(
+              controller: _nameController,
+              decoration: InputDecoration(
+                labelText: 'Name*',
+                border: OutlineInputBorder(),
+                filled: true,
+                fillColor: Theme.of(context).inputDecorationTheme.fillColor,
               ),
             ),
             const SizedBox(height: 16.0),
             TextField(
               controller: _emailController,
-              decoration: const InputDecoration(
+              decoration: InputDecoration(
                 labelText: 'Email*',
                 border: OutlineInputBorder(),
                 filled: true,
-                fillColor: Colors.white70,
+                fillColor: Theme.of(context).inputDecorationTheme.fillColor,
               ),
             ),
             const SizedBox(height: 16.0),
             TextField(
               controller: _passwordController,
-              decoration: const InputDecoration(
+              decoration: InputDecoration(
                 labelText: 'Password*',
                 border: OutlineInputBorder(),
                 filled: true,
-                fillColor: Colors.white70,
+                fillColor: Theme.of(context).inputDecorationTheme.fillColor,
               ),
               obscureText: true,
             ),
@@ -102,18 +128,27 @@ class _SignUpScreenState extends State<SignUpScreen> {
                 }
 
                 try {
-                  await FirebaseAuth.instance.createUserWithEmailAndPassword(
+                  UserCredential userCredential = await FirebaseAuth.instance.createUserWithEmailAndPassword(
                     email: email,
                     password: password,
                   );
 
-                  Navigator.of(context).pushReplacement(
-                    MaterialPageRoute(
-                      builder: (context) => HomeScreen(
-                        onThemeChanged: widget.onThemeChanged,
+                  User? user = userCredential.user;
+
+                  if (user != null) {
+                    await FirebaseFirestore.instance.collection('users').doc(user.uid).set({
+                      'name': name,
+                      'email': email,
+                    });
+
+                    Navigator.of(context).pushReplacement(
+                      MaterialPageRoute(
+                        builder: (context) => HomeScreen(
+                          onThemeChanged: widget.onThemeChanged,
+                        ),
                       ),
-                    ),
-                  );
+                    );
+                  }
                 } on FirebaseAuthException catch (e) {
                   if (e.code == 'weak-password') {
                     ScaffoldMessenger.of(context).showSnackBar(
